@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  pocketmox:
+    build: .
+    container_name: pocketmox
+    privileged: true
+    hostname: pocketmox
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - /tmp:/tmp
+    ports:
+      - "8443:8443"
+    tmpfs:
+      - /run
+      - /run/lock
+    security_opt:
+      - seccomp:unconfined
+    command: ["/sbin/init"]
