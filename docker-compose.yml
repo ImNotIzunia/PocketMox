@@ -2,18 +2,28 @@ version: "3.9"
 
 services:
   pocketmox:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        ROOT_PASSWORD: ${ROOT_PASSWORD}
+
     container_name: pocketmox
-    privileged: true
     hostname: pocketmox
+
+    restart: unless-stopped
+    privileged: true
+    security_opt:
+      - seccomp:unconfined
+
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:rw
       - /tmp:/tmp
-    ports:
-      - "8443:8443"
+
     tmpfs:
       - /run
       - /run/lock
-    security_opt:
-      - seccomp:unconfined
-    command: ["/sbin/init"]
+
+    ports:
+      - "${PDM_PORT:-8443}:8443"
+
