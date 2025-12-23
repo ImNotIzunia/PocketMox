@@ -30,13 +30,15 @@ RUN apt-get update && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 
-ARG ROOT_PASSWORD
-RUN if [ -n "$ROOT_PASSWORD" ]; then echo "root:$ROOT_PASSWORD" | chpasswd; fi 
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 
 VOLUME [ "/sys/fs/cgroup" ]
 
 
-HEALTHCHECK CMD systemctl is-active proxmox-datacenter-manager || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s \
+    CMD systemctl is-active proxmox-datacenter-manager || exit 1
 
 
-CMD ["/sbin/init"]
+CMD ["/entrypoint.sh"]

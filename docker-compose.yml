@@ -5,8 +5,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        ROOT_PASSWORD: ${ROOT_PASSWORD}
+    
+    environment:
+      ROOT_PASSWORD: ${ROOT_PASSWORD}
 
     container_name: pocketmox
     hostname: pocketmox
