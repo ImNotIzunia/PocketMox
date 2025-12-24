@@ -1,0 +1,44 @@
+name: PocketMox
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: debian-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: ShellCheck entrypoint
+        uses: ludeeus/action-shellcheck@v2
+        with:
+          scandir: .
+          severity: error
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          load: true
+          tags: pocketmox:ci
+
+      - name: Verify docker-compose
+        run: |
+          docker compose config
+
+      - name: Trivy scan
+        uses: aquasecurity/trivy-action@v0.20.0
+        with:
+          image-ref: pocketmox:ci
+          severity: CRITICAL,HIGH
+          exit-code: 0
+          vuln-type: os,library
