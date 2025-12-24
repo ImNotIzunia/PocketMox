@@ -8,19 +8,31 @@ echo " PocketMox - Proxmox Datacenter Manager in Docker "
 echo "=================================================="
 
 
-if [ -n "$ROOT_PASSWORD" ]; then
-    echo "[INFO] Setting root password"
-    echo "root:${ROOT_PASSWORD}" | chpasswd
+if [ -z "$ROOT_PASSWORD" ]; then
+    echo "[INFO] No ROOT_PASSWORD provided"
+    echo "[INFO] Generating a random password"
+    ROOT_PASSWORD=$(openssl rand -base64 20)
+    PASSWORD_GENERATED=true
 else
-    echo "[WARNING] ROOT_PASSWORD is not set"
-    echo "[WARNING] Root login may be disabled or inaccessible"
+    echo "[INFO] Using provided ROOT_PASSWORD"
+    PASSWORD_GENERATED=false
 fi
 
+echo "root:${ROOT_PASSWORD}" | chpasswd
 
 echo "--------------------------------------------------"
 echo "[READY] Proxmox Datacenter Manager is running"
 echo "[INFO] Web UI available on :"
-echo "       https://<HOST>:8443"
+echo "URL:      https://<HOST>:8443"
+echo "User:     root"
+
+if [ "$PASSWORD_GENERATED" = true ]; then
+    echo "Password: ${ROOT_PASSWORD}"
+    echo "[INFO] Generated Password - Please store it"
+else 
+    echo "Password: ${ROOT_PASSWORD}"
+fi
+
 echo "--------------------------------------------------"
 
 echo "[SECURITY]"
