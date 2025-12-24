@@ -24,6 +24,9 @@ echo "--------------------------------------------------"
 echo "[READY] Proxmox Datacenter Manager is running"
 echo "[INFO] Web UI available on :"
 echo "URL:      https://<HOST>:8443"
+echo " "
+
+echo "[INFO] Login Credentials :"
 echo "User:     root"
 
 if [ "$PASSWORD_GENERATED" = true ]; then
