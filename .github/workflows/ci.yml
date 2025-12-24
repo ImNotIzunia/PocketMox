@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v4
       
       - name: ShellCheck entrypoint
-        uses: ludeeus/action-shellcheck@v4
+        uses: ludeeus/action-shellcheck@v1
         with:
           scandir: .
           severity: error
@@ -36,7 +36,7 @@ jobs:
           docker compose config
 
       - name: Trivy scan
-        uses: aquasecurity/trivy-action@v0.33.1
+        uses: aquasecurity/trivy-action@v0.10.7
         with:
           image-ref: pocketmox:ci
           severity: CRITICAL,HIGH
