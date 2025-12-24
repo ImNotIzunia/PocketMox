@@ -18,7 +18,28 @@ else
     PASSWORD_GENERATED=false
 fi
 
+
 echo "root:${ROOT_PASSWORD}" | chpasswd
+
+
+echo "[SECURITY] Disabling unused systemd services"
+systemctl mask \
+    getty.target \
+    console-getty.service \
+    serial-getty@.service || true
+
+if [ -f /etc/ssh/sshd_config ]; then
+    echo "[SECURITY] Disabling SSH service"
+    sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin prohibit-password/' /etc/ssh/sshd_config
+    sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
+fi
+
+echo "[SECURITY] Fixing file permissions"
+chmod 600 /etc/shadow
+chmod 600 /etc/gshadow
+chmod 644 /etc/passwd
+chmod 644 /etc/group
+
 
 echo "--------------------------------------------------"
 echo "[READY] Proxmox Datacenter Manager is running"
@@ -31,9 +52,9 @@ echo "User:     root"
 
 if [ "$PASSWORD_GENERATED" = true ]; then
     echo "Password: ${ROOT_PASSWORD}"
-    echo "[INFO] Generated Password - Please store it"
+    echo "[WARNING] Generated Password - Please store it"
 else 
-    echo "Password: ${ROOT_PASSWORD}"
+    echo "Password: Provided by the user"
 fi
 
 echo "--------------------------------------------------"
