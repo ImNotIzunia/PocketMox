@@ -9,7 +9,7 @@ ENV container=docker
 ENV DEBIAN_FRONTEND=noninteractive
 
 
-RUN apt-get update && \
+RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y \
         systemd systemd-sysv \
         dbus dbus-user-session \
@@ -29,7 +29,7 @@ RUN apt-get update && \
         proxmox-datacenter-manager-ui && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-
+    
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
