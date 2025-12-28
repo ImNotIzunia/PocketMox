@@ -6,6 +6,10 @@ on:
       - main
   pull_request:
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build:
     name: Build and Test
@@ -42,5 +46,31 @@ jobs:
           severity: CRITICAL,HIGH
           exit-code: 0
           vuln-type: os,library
-          vex: security/vex.yml
           format: table
+
+      - name: Login to GitHub Container Registry
+        if: github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Login to Docker Hub
+        if: github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push Docker image
+        if: github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/pocketmox:latest
+            ghcr.io/${{ github.repository_owner }}/pocketmox:sha-${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/pocketmox:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/pocketmox:sha-${{ github.sha }}
