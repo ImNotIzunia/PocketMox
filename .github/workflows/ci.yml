@@ -63,6 +63,11 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Set lowercase name
+        run: |
+          echo "LOW_NAME=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
+
+
       - name: Build and Push Docker image
         if: github.ref == 'refs/heads/main'
         uses: docker/build-push-action@v5
@@ -70,7 +75,7 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/pocketmox:latest
-            ghcr.io/${{ github.repository_owner }}/pocketmox:sha-${{ github.sha }}
+            ghcr.io/${{ env.LOW_NAME }}/pocketmox:latest
+            ghcr.io/${{ env.LOW_NAME }}/pocketmox:sha-${{ github.sha }}
             ${{ secrets.DOCKERHUB_USERNAME }}/pocketmox:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/pocketmox:sha-${{ github.sha }}
