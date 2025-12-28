@@ -8,67 +8,80 @@ on:
       - 'v*'
   pull_request:
 
+
 permissions:
   contents: read
   packages: write
 
-jobs:
-  build:
-    name: Build and Test
-    runs-on: ubuntu-latest
 
+jobs:
+  Check:
+    name: ShellCheck
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      
-      - name: ShellCheck entrypoint
+      - uses: actions/checkout@v4
+      - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@master
         with:
           scandir: .
           severity: error
-
+  
+  Build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker image
+      - name: Build Docker Image
         uses: docker/build-push-action@v5
         with:
           context: .
           load: true
           tags: pocketmox:ci
-
+      
       - name: Verify docker-compose
-        run: |
-          docker compose config
+        run: docker compose config
 
-      - name: Trivy scan
+  Scan:
+    name: Trivy Security Scan
+    runs-on: ubuntu-latest
+    needs: Build
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trivy Scan
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: pocketmox:ci
-          severity: CRITICAL,HIGH
-          exit-code: 0
+          severity: HIGH, CRITICAL
+          exit-code: 1
           vuln-type: os,library
           format: table
 
+  Publish:
+    name: Publish Docker Image
+    runs-on: ubuntu-latest
+    needs: [Check, Scan]
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v4
       - name: Login to GitHub Container Registry
-        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Login to Docker Hub
-        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Set lowercase name
-        run: |
-          echo "LOW_NAME=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
-      
+      - name: Set Name Lowercase
+        run: echo "LOW_NAME=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
+
       - name: Detect version
         run: |
           if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
@@ -78,8 +91,7 @@ jobs:
           fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
-      - name: Build and Push Docker image
-        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+      - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -89,13 +101,18 @@ jobs:
             ghcr.io/${{ env.LOW_NAME }}/pocketmox:${{ env.VERSION }}
             ${{ secrets.DOCKERHUB_USERNAME }}/pocketmox:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/pocketmox:${{ env.VERSION }}
-
+    
+  Release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: Publish
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v4
       - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           name: PocketMox ${{ env.VERSION }}
           tag_name: ${{ env.VERSION }}
           generate_release_notes: true
           token: ${{ secrets.GIT_TOKEN }}
-
