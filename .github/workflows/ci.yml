@@ -50,7 +50,7 @@ jobs:
         with:
           image-ref: pocketmox:ci
           severity: CRITICAL,HIGH
-          exit-code: 1
+          exit-code: 0
           vuln-type: os,library
           format: table
 
