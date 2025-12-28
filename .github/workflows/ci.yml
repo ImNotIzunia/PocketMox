@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    tags:
+      - 'v*'
   pull_request:
 
 permissions:
@@ -66,16 +68,33 @@ jobs:
       - name: Set lowercase name
         run: |
           echo "LOW_NAME=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
-
+      
+      - name: Detect version
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/}"
+          else
+            VERSION="latest"
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Build and Push Docker image
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: |
             ghcr.io/${{ env.LOW_NAME }}/pocketmox:latest
-            ghcr.io/${{ env.LOW_NAME }}/pocketmox:sha-${{ github.sha }}
+            ghcr.io/${{ env.LOW_NAME }}/pocketmox:${{ env.VERSION }}
             ${{ secrets.DOCKERHUB_USERNAME }}/pocketmox:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/pocketmox:sha-${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/pocketmox:${{ env.VERSION }}
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: PocketMox ${{ env.VERSION }}
+          tag_name: ${{ env.VERSION }}
+          generate_release_notes: true
+
