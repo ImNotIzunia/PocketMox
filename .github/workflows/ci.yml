@@ -97,4 +97,5 @@ jobs:
           name: PocketMox ${{ env.VERSION }}
           tag_name: ${{ env.VERSION }}
           generate_release_notes: true
+          token: ${{ secrets.GITHUB_TOKEN }}
 
