@@ -1,6 +1,8 @@
 # PocketMox
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Latest Release](https://img.shields.io/github/v/release/ImNotIzunia/PocketMox)](https://github.com/ImNotIzunia/PocketMox/releases)
+[![Docker Hub](https://img.shields.io/docker/pulls/izunia/pocketmox)](https://hub.docker.com/r/izunia/pocketmox)
 
 
 PocketMox is a **Docker Version** of **Proxmox Datacenter Manager**, designed to be easy to deploy while keeping a strong focus on reliability and security.
