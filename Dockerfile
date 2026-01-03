@@ -39,11 +39,15 @@ LABEL org.opencontainers.image.description="Proxmox Datacenter Manager (PDM) Doc
 LABEL org.opencontainers.image.authors="Izunia"
 
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+COPY healthcheck.sh /healthcheck.sh
+
+RUN chmod +x /entrypoint.sh && \
+    chmod +x /healthcheck.sh
+
 
 VOLUME [ "/sys/fs/cgroup" ]
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=60s \
-    CMD systemctl is-active proxmox-datacenter-manager || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=90s \
+  CMD /healthcheck.sh >/dev/null 2>&1 || exit 1
 
 CMD ["/entrypoint.sh"]
