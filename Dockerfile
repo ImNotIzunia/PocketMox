@@ -1,8 +1,8 @@
-FROM debian:trixie
+FROM debian:trixie-slim
 
 LABEL org.opencontainers.image.title="PocketMox"
 LABEL org.opencontainers.image.description="Proxmox Datacenter Manager (PDM) Docker Container"
-LABEL org.opencontainers.image.authors="Charles Berthet"
+LABEL org.opencontainers.image.authors="Izunia"
 
 
 ENV container=docker

@@ -3,7 +3,7 @@ document:
   metadata:
     id: "pocketmox-busybox"
     title: "VEX for Busybox CVE-2023-39810 in Pocketmox"
-    author: "Charles Berthet"
+    author: "Izunia"
     created: "2025-12-25"
     tool: "Trivy + manual verification"
   
