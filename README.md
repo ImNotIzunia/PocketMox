@@ -109,6 +109,7 @@ This is a personal project maintained by a single contributor.
 All issues and pull requests are welcome. 
 Please keep security and stability in mind when contributing.
 
+
 ## License
 
 MIT License
